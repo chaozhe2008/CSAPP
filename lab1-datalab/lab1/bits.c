@@ -305,19 +305,20 @@ unsigned floatScale2(unsigned uf) {
  */
 int floatFloat2Int(unsigned uf) {
 
-  unsigned exp = (uf & 0x7f800000) >> 23;
+  int exp = (uf >> 23) & 0xff;
   int sign = (uf >> 31) & 1;
-  unsigned frac = uf & 0x7fffff;
+  int frac = uf & 0x7fffff;
   int E = exp - 127;
-  if (E < 0) return 0;
-  if (E > 31) return 0x80000000u;
-  frac |= (1 << 23);
+  if (!exp || E < 0) return 0;
+  if (E >= 31) return 0x80000000u;
+  frac = frac | 1 << 23;
+
   if (E < 23){
     frac >>= (23 - E);
   } else {
     frac <<= (E - 23);
   }
-  return sign ? -frac : frac;
+  return sign ? (~frac) + 1 : frac;
 }
 /*
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
